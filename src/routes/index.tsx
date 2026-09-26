@@ -98,7 +98,7 @@ function Index() {
 
   const emailOrderLink = () => {
     if (!orderResult) return "#";
-    const lines = cart.items
+    const lines = orderedItems
       .map((i) => `• ${i.name} x${i.qty} — ${fmt(i.price * i.qty)}`)
       .join("\n");
     const body = `Assalam-o-Alaikum!\n\nMera naya order:\nOrder #: ${orderResult.orderCode}\nTotal: ${fmt(orderResult.total)}\n\nSam\n${lines}\n\nNaam: ${form.name}\nPhone: ${form.phone}\nPata: ${form.address}, ${form.city}`;
