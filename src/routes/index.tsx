@@ -86,6 +86,7 @@ function Index() {
         },
       });
       setOrderResult(result);
+      setOrderedItems(cart.items.map((i) => ({ id: i.id, name: i.name, price: i.price, qty: i.qty })));
       setCustomerEmail(form.email);
       cart.clearCart();
       setStage("success");
