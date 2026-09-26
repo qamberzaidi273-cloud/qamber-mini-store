@@ -60,6 +60,7 @@ function Index() {
   const [form, setForm] = useState<FormState>(emptyForm);
   const [submitting, setSubmitting] = useState(false);
   const [orderResult, setOrderResult] = useState<{ orderCode: string; total: number } | null>(null);
+  const [orderedItems, setOrderedItems] = useState<CartItemLite[]>([]);
   const [customerEmail, setCustomerEmail] = useState("");
 
   const products = data.products;
