@@ -28,6 +28,7 @@ export type Database = {
           order_code: string
           status: string
           total: number
+          user_id: string | null
         }
         Insert: {
           address: string
@@ -42,6 +43,7 @@ export type Database = {
           order_code?: string
           status?: string
           total: number
+          user_id?: string | null
         }
         Update: {
           address?: string
@@ -56,6 +58,7 @@ export type Database = {
           order_code?: string
           status?: string
           total?: number
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -92,6 +95,33 @@ export type Database = {
           name?: string
           price?: number
           sort_order?: number
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          phone: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string
+          full_name?: string
+          id: string
+          phone?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          phone?: string
+          updated_at?: string
         }
         Relationships: []
       }
