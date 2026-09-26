@@ -67,23 +67,24 @@ export const placeOrder = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     // Recompute the total server-side so the client can't send a fake price.
     const total = data.items.reduce((sum, item) => sum + item.price * item.qty, 0);
+    const orderCode = `QMS-${randomBytes(3).toString("hex").toUpperCase()}`;
 
-    const supabase = getPublicClient();
-    const { data: order, error } = await supabase
-      .from("orders")
-      .insert({
-        customer_name: data.name,
-        customer_phone: data.phone,
-        customer_email: data.email,
-        address: data.address,
-        city: data.city,
-        notes: data.notes ?? "",
-        items: data.items,
-        total,
-      })
-      .select("order_code, total")
-      .single();
+    // Orders contain everyone's data, so anonymous users may only insert (RLS).
+    // The privileged client is loaded here, inside the handler, to write the
+    // validated order and read back its code.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.from("orders").insert({
+      order_code: orderCode,
+      customer_name: data.name,
+      customer_phone: data.phone,
+      customer_email: data.email,
+      address: data.address,
+      city: data.city,
+      notes: data.notes ?? "",
+      items: data.items,
+      total,
+    });
 
     if (error) throw new Error(error.message);
-    return { orderCode: order.order_code as string, total: order.total as number };
+    return { orderCode, total };
   });
