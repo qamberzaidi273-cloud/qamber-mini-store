@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { createClient } from "@supabase/supabase-js";
+import { randomBytes } from "crypto";
 import { z } from "zod";
 
 export type StoreProduct = {
