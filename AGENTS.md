@@ -1,3 +1,5 @@
+// ============= Full file contents =============
+
 <!-- LOVABLE:BEGIN -->
 > [!IMPORTANT]
 > This project is connected to [Lovable](https://lovable.dev). Avoid rewriting
@@ -8,3 +10,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Anonymous users may only INSERT into `orders` (RLS). Order confirmation reads happen through the admin client inside the `placeOrder` handler — an anon insert with RETURNING fails RLS because anon has no SELECT policy on orders.
