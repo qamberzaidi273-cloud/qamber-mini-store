@@ -1,11 +1,22 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Toaster, toast } from "sonner";
-import { ShoppingBasket, X, Plus, Minus, Trash2, Mail, Loader2, BadgeCheck } from "lucide-react";
+import { ShoppingBasket, X, Plus, Minus, Trash2, Mail, Loader2, BadgeCheck, User } from "lucide-react";
 
 import { getProducts, placeOrder, type StoreProduct } from "@/lib/store.functions";
 import { useCart } from "@/hooks/use-cart";
+import { supabase } from "@/integrations/supabase/client";
+
+function useIsLoggedIn() {
+  const [loggedIn, setLoggedIn] = useState(false);
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setLoggedIn(!!data.user));
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => setLoggedIn(!!session));
+    return () => sub.subscription.unsubscribe();
+  }, []);
+  return loggedIn;
+}
 
 export const Route = createFileRoute("/")({
   loader: ({ context }) =>
@@ -64,6 +75,7 @@ function Index() {
   const [customerEmail, setCustomerEmail] = useState("");
 
   const products = data.products;
+  const loggedIn = useIsLoggedIn();
   const categories = useMemo(
     () => ["Sab", ...Array.from(new Set(products.map((p) => p.category)))],
     [products],
@@ -121,18 +133,27 @@ function Index() {
               <p className="text-[11px] text-muted-foreground">Har cheez, ek jagah</p>
             </div>
           </div>
-          <button
-            onClick={() => setStage("cart")}
-            className="relative flex h-11 w-11 items-center justify-center rounded-xl bg-secondary text-secondary-foreground transition-colors hover:bg-accent"
-            aria-label="Cart kholein"
-          >
-            <ShoppingBasket className="h-5 w-5" />
-            {cart.count > 0 && (
-              <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1 text-[11px] font-bold text-accent-foreground">
-                {cart.count}
-              </span>
-            )}
-          </button>
+          <div className="flex items-center gap-2">
+            <Link
+              to={loggedIn ? "/account" : "/auth"}
+              className="flex h-11 items-center gap-1.5 rounded-xl bg-secondary px-3 text-sm font-semibold text-secondary-foreground transition-colors hover:bg-accent"
+            >
+              <User className="h-4 w-4" />
+              {loggedIn ? "Account" : "Login"}
+            </Link>
+            <button
+              onClick={() => setStage("cart")}
+              className="relative flex h-11 w-11 items-center justify-center rounded-xl bg-secondary text-secondary-foreground transition-colors hover:bg-accent"
+              aria-label="Cart kholein"
+            >
+              <ShoppingBasket className="h-5 w-5" />
+              {cart.count > 0 && (
+                <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1 text-[11px] font-bold text-accent-foreground">
+                  {cart.count}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
       </header>
 
