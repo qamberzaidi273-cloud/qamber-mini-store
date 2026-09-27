@@ -50,9 +50,18 @@ function AuthPage() {
     if (busy) return;
 
     if (mode === "register") {
-      if (fullName.trim().length < 2) return toast.error("Poora naam likhein");
-      if (password.length < 6) return toast.error("Password kam az kam 6 characters ka ho");
-      if (password !== confirm) return toast.error("Dono passwords same nahi hain");
+      if (fullName.trim().length < 2) {
+        toast.error("Poora naam likhein");
+        return;
+      }
+      if (password.length < 6) {
+        toast.error("Password kam az kam 6 characters ka ho");
+        return;
+      }
+      if (password !== confirm) {
+        toast.error("Dono passwords same nahi hain");
+        return;
+      }
       setBusy(true);
       const { error } = await supabase.auth.signUp({
         email: email.trim(),
@@ -63,7 +72,10 @@ function AuthPage() {
         },
       });
       setBusy(false);
-      if (error) return toast.error(error.message);
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
       setRegistered(true);
       return;
     }
@@ -74,7 +86,10 @@ function AuthPage() {
         redirectTo: `${window.location.origin}/reset-password`,
       });
       setBusy(false);
-      if (error) return toast.error(error.message);
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
       toast.success("Password reset link aapki email par bhej diya gaya hai.");
       setMode("login");
       return;
@@ -83,7 +98,10 @@ function AuthPage() {
     setBusy(true);
     const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
     setBusy(false);
-    if (error) return toast.error("Email ya password ghalat hai.");
+    if (error) {
+      toast.error("Email ya password ghalat hai.");
+      return;
+    }
     toast.success("Welcome back!");
     navigate({ to: "/" });
   };

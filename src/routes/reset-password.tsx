@@ -44,12 +44,21 @@ function ResetPasswordPage() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password.length < 6) return toast.error("Password kam az kam 6 characters ka ho");
-    if (password !== confirm) return toast.error("Dono passwords same nahi hain");
+    if (password.length < 6) {
+      toast.error("Password kam az kam 6 characters ka ho");
+      return;
+    }
+    if (password !== confirm) {
+      toast.error("Dono passwords same nahi hain");
+      return;
+    }
     setBusy(true);
     const { error } = await supabase.auth.updateUser({ password });
     setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     toast.success("Password badal gaya! Ab login karein.");
     navigate({ to: "/auth" });
   };
