@@ -1,7 +1,33 @@
-import { createServerFn } from "@tanstack/react-start";
+import { createServerFn, createMiddleware } from "@tanstack/react-start";
+import { getRequest } from "@tanstack/react-start/server";
 import { createClient } from "@supabase/supabase-js";
 import { randomBytes } from "crypto";
 import { z } from "zod";
+
+// Attaches the signed-in user's id when a bearer token is present, but never
+// rejects the request — guest checkout must keep working.
+const optionalSupabaseAuth = createMiddleware({ type: "function" }).server(
+  async ({ next }) => {
+    let userId: string | null = null;
+    try {
+      const request = getRequest();
+      const authHeader = request?.headers.get("authorization");
+      const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
+      if (token && token.split(".").length === 3) {
+        const client = createClient(
+          process.env["SUPABASE_URL"]!,
+          process.env["SUPABASE_PUBLISHABLE_KEY"]!,
+          { auth: { storage: undefined, persistSession: false, autoRefreshToken: false } },
+        );
+        const { data } = await client.auth.getClaims(token);
+        userId = data?.claims?.sub ?? null;
+      }
+    } catch {
+      userId = null;
+    }
+    return next({ context: { userId } });
+  },
+);
 
 export type StoreProduct = {
   id: string;
@@ -64,8 +90,9 @@ const checkoutSchema = z.object({
 });
 
 export const placeOrder = createServerFn({ method: "POST" })
+  .middleware([optionalSupabaseAuth])
   .inputValidator((data) => checkoutSchema.parse(data))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
     // Recompute the total server-side so the client can't send a fake price.
     const total = data.items.reduce((sum, item) => sum + item.price * item.qty, 0);
     const orderCode = `QMS-${randomBytes(3).toString("hex").toUpperCase()}`;
@@ -84,6 +111,7 @@ export const placeOrder = createServerFn({ method: "POST" })
       notes: data.notes ?? "",
       items: data.items,
       total,
+      user_id: context.userId,
     });
 
     if (error) throw new Error(error.message);
